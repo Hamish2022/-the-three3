@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chat App</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+  }
+  #chat-container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+  }
+  #messages {
+    list-style-type: none;
+    padding: 0;
+  }
+  .message {
+    margin-bottom: 10px;
+    padding: 5px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .message span.sender {
+    font-weight: bold;
+  }
+  .delete-btn {
+    color: red;
+    cursor: pointer;
+  }
+</style>
+</head>
+<body>
+<div id="chat-container">
+  <ul id="messages"></ul>
+  <input type="text" id="messageInput" placeholder="Enter your message">
+  <button id="sendButton">Send</button>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyCgy5H1EyCALT9XXWU_eqLkz7TKLEER0xg",
+  authDomain: "our-chat-bf803.firebaseapp.com",
+  databaseURL: "https://our-chat-bf803-default-rtdb.firebaseio.com",
+  projectId: "our-chat-bf803",
+  storageBucket: "our-chat-bf803.appspot.com",
+  messagingSenderId: "1074105406876",
+  appId: "1:1074105406876:web:52a1353d0d32ce58aba459"
+};
+  firebase.initializeApp(firebaseConfig);
+
+  const users = {
+    Hamish: "hamishpassword",
+    Vairaj: "vairajpassword",
+    Aroosh: "arooshpassword"
+  };
+
+  firebase.auth().signInAnonymously().then(() => {
+    const currentUser = prompt("Enter your username:");
+    const password = prompt("Enter your password:");
+
+    if (users[currentUser] === password) {
+      const messagesRef = firebase.database().ref("messages");
+
+      document.getElementById("sendButton").addEventListener("click", () => {
+        const messageInput = document.getElementById("messageInput");
+        const message = messageInput.value;
+
+        if (message.trim() !== "") {
+          messagesRef.push({
+            sender: currentUser,
+            message: message
+          });
+          messageInput.value = "";
+        }
+      });
+
+      messagesRef.on("child_added", (snapshot) => {
+        const message = snapshot.val();
+        const messagesList = document.getElementById("messages");
+        const li = document.createElement("li");
+        li.className = "message";
+        li.setAttribute("data-key", snapshot.key);
+        li.innerHTML = `<span class="sender">${message.sender}:</span> ${message.message}`;
+
+        if (message.sender === currentUser) {
+          const deleteBtn = document.createElement("span");
+          deleteBtn.className = "delete-btn";
+          deleteBtn.innerText = "Delete";
+          deleteBtn.addEventListener("click", () => {
+            messagesRef.child(snapshot.key).remove();
+          });
+          li.appendChild(deleteBtn);
+        }
+
+        messagesList.appendChild(li);
+      });
+
+      messagesRef.on("child_removed", (snapshot) => {
+        const removedKey = snapshot.key;
+        const messageToRemove = document.querySelector(`[data-key="${removedKey}"]`);
+        if (messageToRemove) {
+          messageToRemove.remove();
+        }
+      });
+    } else {
+      alert("Invalid username or password. Please refresh the page and try again.");
+    }
+  }).catch((error) => {
+    console.error("Error signing in anonymously:", error);
+  });
+</script>
+</body>
+</html>
+
+
+
+
+
+

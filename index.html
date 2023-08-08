@@ -48,15 +48,15 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 <script>
-const firebaseConfig = {
-  apiKey: "AIzaSyCgy5H1EyCALT9XXWU_eqLkz7TKLEER0xg",
-  authDomain: "our-chat-bf803.firebaseapp.com",
-  databaseURL: "https://our-chat-bf803-default-rtdb.firebaseio.com",
-  projectId: "our-chat-bf803",
-  storageBucket: "our-chat-bf803.appspot.com",
-  messagingSenderId: "1074105406876",
-  appId: "1:1074105406876:web:52a1353d0d32ce58aba459"
-};
+  const firebaseConfig = {
+    apiKey: "AIzaSyCgy5H1EyCALT9XXWU_eqLkz7TKLEER0xg",
+    authDomain: "our-chat-bf803.firebaseapp.com",
+    databaseURL: "https://our-chat-bf803-default-rtdb.firebaseio.com",
+    projectId: "our-chat-bf803",
+    storageBucket: "our-chat-bf803.appspot.com",
+    messagingSenderId: "1074105406876",
+    appId: "1:1074105406876:web:52a1353d0d32ce58aba459"
+  };
   firebase.initializeApp(firebaseConfig);
 
   const users = {
@@ -72,11 +72,152 @@ const firebaseConfig = {
     if (users[currentUser] === password) {
       const messagesRef = firebase.database().ref("messages");
 
+      const typoDictionary = {
+  "dont": "don't",
+  "k": "okay",
+  "hi": "hello",
+  "i": "I",
+  "vairaj": "Vairaj",
+  "hamish": "Hamish",
+  "aroosh": "Aroosh",
+  "thier": "their",
+  "teh": "the",
+  "fro": "for",
+  "yuor": "your",
+  "taht": "that",
+  "loose": "lose",
+  "definately": "definitely",
+  "wierd": "weird",
+  "alot": "a lot",
+  "throught": "thought",
+  "buisness": "business",
+  "occured": "occurred",
+  "wether": "whether",
+  "truely": "truly",
+  "concious": "conscious",
+  "recieve": "receive",
+  "writting": "writing",
+  "experiance": "experience",
+  "seperate": "separate",
+  "embarass": "embarrass",
+  "acommodation": "accommodation",
+  "adress": "address",
+  "aggresive": "aggressive",
+  "apparantly": "apparently",
+  "arguement": "argument",
+  "athiest": "atheist",
+  "begining": "beginning",
+  "bizzare": "bizarre",
+  "brocolli": "broccoli",
+  "definate": "definite",
+  "dilemna": "dilemma",
+  "ecstacy": "ecstasy",
+  "existance": "existence",
+  "foriegn": "foreign",
+  "gaurantee": "guarantee",
+  "harrass": "harass",
+  "humerous": "humorous",
+  "independant": "independent",
+  "irresistable": "irresistible",
+  "jist": "just",
+  "liason": "liaison",
+  "mischievious": "mischievous",
+  "neccessary": "necessary",
+  "occurence": "occurrence",
+  "paralel": "parallel",
+  "peice": "piece",
+  "possesion": "possession",
+  "pronounciation": "pronunciation",
+  "publically": "publicly",
+  "relevent": "relevant",
+  "rythm": "rhythm",
+  "seige": "siege",
+  "succesful": "successful",
+  "suprise": "surprise",
+  "vaccuum": "vacuum",
+  "weigth": "weight",
+  "wierd": "weird",
+  "writting": "writing",
+  // Additional typos and corrections
+  "acceptible": "acceptable",
+  "accidently": "accidentally",
+  "acheive": "achieve",
+  "aquire": "acquire",
+  "aquaintance": "acquaintance",
+  "arguement": "argument",
+  "athleticism": "athleticism",
+  "beggining": "beginning",
+  "beleive": "believe",
+  "calender": "calendar",
+  "cemetary": "cemetery",
+  "collegue": "colleague",
+  "comming": "coming",
+  "completly": "completely",
+  "congradulations": "congratulations",
+  "critisize": "criticize",
+  "definately": "definitely",
+  "dilemna": "dilemma",
+  "disipline": "discipline",
+  "discrepency": "discrepancy",
+  "dissapear": "disappear",
+  "ecstacy": "ecstasy",
+  "embarass": "embarrass",
+  "existance": "existence",
+  "fluoroscent": "fluorescent",
+  "foriegn": "foreign",
+  "freind": "friend",
+  "gaurantee": "guarantee",
+  "harrass": "harass",
+  "humerous": "humorous",
+  "independant": "independent",
+  "innoculate": "inoculate",
+  "intresting": "interesting",
+  "itenerary": "itinerary",
+  "jist": "just",
+  "loose": "lose",
+  "maintainance": "maintenance",
+  "mispell": "misspell",
+  "neccessary": "necessary",
+  "occured": "occurred",
+  "occurence": "occurrence",
+  "pavillion": "pavilion",
+  "peice": "piece",
+  "posession": "possession",
+  "prefered": "preferred",
+  "priviledge": "privilege",
+  "publically": "publicly",
+  "questionaire": "questionnaire",
+  "recieve": "receive",
+  "rediculous": "ridiculous",
+  "relevent": "relevant",
+  "restaraunt": "restaurant",
+  "rythm": "rhythm",
+  "seperate": "separate",
+  "succesful": "successful",
+  "suprise": "surprise",
+  "truely": "truly",
+  "unecessary": "unnecessary",
+  "vaccuum": "vacuum",
+  "weird": "weird",
+  "wierd": "weird",
+  // ... and so on
+};
+
+      function performAutoCorrect(inputText) {
+        const words = inputText.split(" ");
+        const correctedWords = words.map((word) => {
+          const correctedWord = typoDictionary[word.toLowerCase()] || word;
+          return correctedWord;
+        });
+        return correctedWords.join(" ");
+      }
+
       document.getElementById("sendButton").addEventListener("click", () => {
         const messageInput = document.getElementById("messageInput");
-        const message = messageInput.value;
+        let message = messageInput.value;
 
         if (message.trim() !== "") {
+          message = performAutoCorrect(message);
           messagesRef.push({
             sender: currentUser,
             message: message
@@ -113,6 +254,7 @@ const firebaseConfig = {
           messageToRemove.remove();
         }
       });
+
     } else {
       alert("Invalid username or password. Please refresh the page and try again.");
     }

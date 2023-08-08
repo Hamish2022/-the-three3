@@ -34,6 +34,15 @@
   .delete-btn {
     color: red;
     cursor: pointer;
+    margin-right: 10px;
+  }
+  .edit-btn {
+    color: blue;
+    cursor: pointer;
+    margin-right: 10px;
+  }
+  .editing {
+    background-color: #f0f8ff;
   }
 </style>
 </head>
@@ -216,13 +225,20 @@
         const messageInput = document.getElementById("messageInput");
         let message = messageInput.value;
 
-        if (message.trim() !== "") {
-          message = performAutoCorrect(message);
-          messagesRef.push({
-            sender: currentUser,
-            message: message
-          });
+        const editKey = messageInput.getAttribute("data-edit-key");
+        if (editKey) {
+          messagesRef.child(editKey).update({ message: performAutoCorrect(message) });
+          messageInput.removeAttribute("data-edit-key");
           messageInput.value = "";
+        } else {
+          if (message.trim() !== "") {
+            message = performAutoCorrect(message);
+            messagesRef.push({
+              sender: currentUser,
+              message: message
+            });
+            messageInput.value = "";
+          }
         }
       });
 
@@ -232,7 +248,7 @@
         const li = document.createElement("li");
         li.className = "message";
         li.setAttribute("data-key", snapshot.key);
-        li.innerHTML = `<span class="sender">${message.sender}:</span> ${message.message}`;
+        li.innerHTML = `<span class="sender">${message.sender}:</span> <span class="message-content">${message.message}</span>`;
 
         if (message.sender === currentUser) {
           const deleteBtn = document.createElement("span");
@@ -242,9 +258,28 @@
             messagesRef.child(snapshot.key).remove();
           });
           li.appendChild(deleteBtn);
+
+          const editBtn = document.createElement("span");
+          editBtn.className = "edit-btn";
+          editBtn.innerText = "Edit";
+          editBtn.addEventListener("click", () => {
+            messageInput.value = message.message;
+            messageInput.setAttribute("data-edit-key", snapshot.key);
+          });
+          li.appendChild(editBtn);
         }
 
         messagesList.appendChild(li);
+      });
+
+      messagesRef.on("child_changed", (snapshot) => {
+        const editedKey = snapshot.key;
+        const editedMessage = document.querySelector(`[data-key="${editedKey}"]`);
+        if (editedMessage) {
+          const editedMessageContent = snapshot.val();
+          editedMessage.querySelector(".message-content").innerText = editedMessageContent.message;
+          editedMessage.classList.remove("editing");
+        }
       });
 
       messagesRef.on("child_removed", (snapshot) => {
@@ -264,7 +299,6 @@
 </script>
 </body>
 </html>
-
 
 
 
